@@ -1,0 +1,117 @@
+--	Crie o banco de dados
+CREATE DATABASE app_safegear;
+
+-- 	Use o banco de dados app_safegear
+\c app_safegear:
+
+--	Crie a tabela cadastro_login
+CREATE TABLE if not exists cadastro_login (
+     Email varchar(80) PRIMARY KEY,
+     Nome varchar(60),
+     Telefone varchar(20),
+     Senha varchar(20)
+     );
+
+--	Crie o ENUM
+CREATE TYPE sexo_opcoes AS ENUM ('masculino', 'feminino');
+CREATE TYPE niveis AS ENUM ('ENSINO FUNDAMENTAL COMPLETO','ENSINO FUNDAMENTAL INCOMPLETO','ENSINO MÉDIO COMPLETO','ENSINO MÉDIO     INCOMPLETO','SUPERIOR COMPLETO', 'SUPERIOR INCOMPLETO','PÓS-GRADUAÇÃO','MESTRADO','DOUTORADO');
+
+-- 	Crie a tabela trabalhador
+CREATE TABLE if not exists trabalhador (    
+    Nome_trabalhador varchar(60) primary key,
+    CPF varchar(10),  
+    RG varchar(14),
+    Email varchar(80),
+    Sexo sexo_opcoes
+    Data_nascimento date,
+    Data_admissão date,
+    Escolaridade niveis
+    Nis varchar(20),
+    );
+
+-- 	Crie a tabela normas 
+CREATE TABLE if not exists normas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    file_name VARCHAR(255),
+    file_path VARCHAR(255),
+    description TEXT
+);
+
+-- 	Crie a tabela tela_login
+CREATE TABLE if not exists tela_login (  
+    Email varchar(80),
+    Senha varchar(20),
+);
+
+--	Crie a tabela controle_epi
+CREATE TABLE if not exists controle_epi(
+    Nome_trabalhador varchar(60),
+    Data_entrega date,
+    Nome_Epi varchar(40) PRIMARY KEY,
+    );
+
+--	Crie o ENUM
+CREATE TYPE trocas AS ENUM ('Entrega', 'Substituição', 'Perda', 'Dano');
+
+--	Crie a tabela epi
+CREATE TABLE if not exists epi(
+    Cod_Epi int(4) PRIMARY KEY,
+    Nome_Epi varchar(40),
+    Quantidade int(5),
+    Motivo trocas ,
+    Validade date,
+    Previsão_substitução date,
+    );
+
+-- Crie o ENUM
+CREATE TYPE sim_ou_nao AS ENUM ('sim', 'não');
+
+-- 	Crie a tabela acidente
+CREATE TABLE if not exists acidente(
+    Nome_trabalhador varchar(60), 
+    Data date,
+    Hora time,
+    Ultimo_dia_trabalhado date,
+    Local_acidente varchar(25),
+    Setor varchar(30),
+    Endereço varchar(50),
+    Numero int(5),
+    Bairro varchar(20),
+    Descrição_do_local varchar(60),
+    Afastamento sim_ou_nao,
+    Óbito sim_ou_nao,
+    );
+
+ALTER TABLE trabalhador
+ADD CONSTRAINT fk_acidente_trabalhador FOREIGN KEY (Nome_trabalhador) REFERENCES trabalhador(Nome_trabalhador);
+
+ALTER TABLE tela_login
+ADD CONSTRAINT fk_login_cadastro FOREIGN KEY (Email) REFERENCES cadastro_login(Email);
+
+ALTER TABLE controle_epi
+ADD CONSTRAINT fk_trabalhador_controle_epi FOREIGN KEY (Nome_trabalhador) REFERENCES trabalhador(Nome_trabalhador);
+
+ALTER TABLE epi
+ADD CONSTRAINT fk_epi_controle_epi FOREIGN KEY (Nome_Epi) REFERENCES controle_epi(Nome_Epi);
+
+ALTER TABLE acidente
+ADD CONSTRAINT CONSTRAINT fk_acidente_trabalhador FOREIGN KEY (Nome_trabalhador) REFERENCES trabalhador(Nome_trabalhador);
+
+INSERT INTO cadastro_login (Email, Nome, Telefone, Senha)
+VALUES ('exemplo@email.com', 'Fulano de Tal', '(99) 99999-9999', 'lcs123');
+
+INSERT INTO tela_login (Email, Senha)
+VALUES ('exemplo@email.com', 'lcs123');
+
+INSERT INTO trabalhador (Nome_trabalhador, CPF, RG, Email, Sexo, Data_nascimento, Data_admissão, Escolaridade, Nis)
+VALUES ('Fulano de Tal', '123.456.789-00', '12.345.678-9', 'fulano@example.com', 'masculino', '1990-01-01', '2023-08-06', 'SUPERIOR COMPLETO', '12345678900');
+
+INSERT INTO controle_epi (Nome_trabalhador, Data_entrega, Nome_Epi)
+VALUES ('Fulano de Tal', '2023-08-06', 'Capacete de Segurança');
+
+INSERT INTO epi (Cod_Epi, Nome_Epi, Quantidade, Motivo, Validade, Previsão_substituição)
+VALUES (1, 'Capacete de Segurança', 10, 'Entrega', '2024-08-06', '2025-08-06');
+
+INSERT INTO acidente (Nome_trabalhador, Data, Hora, Ultimo_dia_trabalhado, Local_acidente, Setor, Endereço, Numero, Bairro, Descrição_do_local, Afastamento, Óbito)
+VALUES ('Fulano de Tal', '2023-08-06', '14:30:00', '2023-08-05', 'Fábrica ABC', 'Produção', 'Rua Principal', 123, 'Centro', 'Área de máquinas', 'Sim', 'Não');
+
